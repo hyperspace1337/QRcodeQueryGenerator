@@ -30,20 +30,27 @@ def create_consumable(consumable: ConsumableAddSchema, db: Session = Depends(get
     )
     db.add(new_consumable)
     db.commit()
-    return {"ok": True, "message": f"Расходник '{new_consumable.name}' добавлен"}
+    db.refresh(new_consumable)
+    return {"ok": True,
+            "id": new_consumable.id,
+            "message": f"Расходник '{new_consumable.name}' c id {new_consumable.id} успешно добавлен"}
 
 @app.get("/consumables", tags = ["Расходники"], summary="Получить список расходников")
 def get_cunsumables(db: Session = Depends(get_db)):
     query = select(ConsumableModel)
     data = db.execute(query)
-    return {"data": data.scalars().all(), "ok": True, "message": "Передан список расходников"}
+    return {"data": data.scalars().all(),
+            "ok": True,
+            "message": "Cписок расходников успешно передан"}
 
 @app.get("/consumables/{consumable_id}", tags = ["Расходники"], summary="Получить расходник")
 def get_consumable(consumable_id: int, db: Session = Depends(get_db)):
     consumable = db.get(ConsumableModel, consumable_id)
     if consumable is None:
         raise HTTPException(status_code=404, detail="Расходник не найден")
-    return {"data": consumable, "ok": True, "message": f"Расходник с id {consumable_id} успешно передан"}
+    return {"data": consumable,
+            "ok": True,
+            "message": f"Расходник с id {consumable_id} успешно передан"}
 
 @app.get("/consumables/{consumable_id}/qrcode", tags = ["QR-коды"], summary="Получить QR-код для расходника")
 def get_qrcode(consumable_id: int, db: Session = Depends(get_db)):
@@ -76,14 +83,14 @@ def update_consumable(consumable_id: int, patch_data: ConsumablePatchSchema, db:
 
     for key, value in consumable_patch.items():
         setattr(consumable, key, value)
-#    try:
+
     db.add(consumable)
     db.commit()
-##    except sqlalchemy.exc.DataError:
-##        raise HTTPException(status_code=422, detail="Данные введены некорректно")
+    db.refresh(consumable)
 
-
-    return {"ok": True, "message": f"Расходник с id {consumable_id} успешно обновлен"}
+    return {"data": consumable,
+            "ok": True,
+            "message": f"Расходник с id {consumable.id} успешно обновлен"}
 
 @app.delete("/consumables/{consumable_id}", tags=["Расходники"], summary="Удалить расходник")
 def delete_consumable(consumable_id: int, db: Session = Depends(get_db)):
@@ -95,7 +102,8 @@ def delete_consumable(consumable_id: int, db: Session = Depends(get_db)):
     db.delete(consumable)
     db.commit()
 
-    return {"ok": True, "message": f"Расходник с id {consumable_id} успешно удален"}
+    return {"ok": True,
+            "message": f"Расходник с id {consumable_id} успешно удален"}
 
 
 if __name__ == "__main__":
