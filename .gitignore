@@ -1,5 +1,6 @@
 /backend/.venv
 /backend/.idea
+/backend/.env
 
 /frontend/.vscode
 /frontend/node_modules/
