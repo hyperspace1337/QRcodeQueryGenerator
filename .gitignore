@@ -1,9 +1,9 @@
-/backend/.venv
-/backend/.idea
-/backend/.env
-/backend/__pycache__/
+backend/.venv
+backend/.idea
+backend/.env
+backend/__pycache__/
 
-/frontend/.vscode
-/frontend/node_modules/
-/frontend/dist/
-/frontend/build/
+frontend/.vscode
+frontend/node_modules/
+frontend/dist/
+frontend/build/
