@@ -29,8 +29,9 @@ def create_consumable(consumable: ConsumableAddSchema, db: Session = Depends(get
     db.add(new_consumable)
     db.commit()
     db.refresh(new_consumable)
-    return {"ok": True,
-            "id": new_consumable.id,
+
+    return {"data": new_consumable,
+            "ok": True,
             "message": f"Расходник '{new_consumable.name}' c id {new_consumable.id} успешно добавлен"}
 
 @router.get("/", summary="Получить список расходников")
@@ -42,20 +43,16 @@ def get_consumables(db: Session = Depends(get_db)):
             "message": "Cписок расходников успешно передан"}
 
 @router.get("/{consumable_id}", summary="Получить расходник")
-def get_consumable(consumable_id: int,
-                   db: Session = Depends(get_db),
-                   consumable: ConsumableModel = Depends(check_consumable_exists)):
+def get_consumable(consumable: ConsumableModel = Depends(check_consumable_exists)):
     return {"data": consumable,
             "ok": True,
-            "message": f"Расходник с id {consumable_id} успешно передан"}
+            "message": f"Расходник с id {consumable.id} успешно передан"}
 
 @router.get("/{consumable_id}/qrcode", tags = ["Расходники", "QR-коды"], summary="Получить QR-код для расходника")
-def get_qrcode(consumable_id: int,
-               db: Session = Depends(get_db),
-               consumable: ConsumableModel = Depends(check_consumable_exists)):
+def get_qrcode(consumable: ConsumableModel = Depends(check_consumable_exists)):
 
         qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
-        qr.add_data(consumable_id)
+        qr.add_data(consumable.id)
         qr_img = qr.make_image(image_factory=StyledPilImage, embedded_image_path= assets_dir/"AE.png")
 
         buffer = BytesIO()
@@ -66,8 +63,7 @@ def get_qrcode(consumable_id: int,
         return Response(content=buffer.read(), media_type="image/png")
 
 @router.patch("/{consumable_id}", tags=["Расходники"], summary="Обновить расходник")
-def update_consumable(consumable_id: int,
-                      patch_data: ConsumablePatchSchema,
+def update_consumable(patch_data: ConsumablePatchSchema,
                       db: Session = Depends(get_db),
                       consumable: ConsumableModel = Depends(check_consumable_exists)):
 
@@ -88,12 +84,11 @@ def update_consumable(consumable_id: int,
             "message": f"Расходник с id {consumable.id} успешно обновлен"}
 
 @router.delete("/{consumable_id}", tags=["Расходники"], summary="Удалить расходник")
-def delete_consumable(consumable_id: int,
-                      db: Session = Depends(get_db),
+def delete_consumable(db: Session = Depends(get_db),
                       consumable: ConsumableModel = Depends(check_consumable_exists)):
 
     db.delete(consumable)
     db.commit()
 
     return {"ok": True,
-            "message": f"Расходник с id {consumable_id} успешно удален"}
+            "message": f"Расходник с id {consumable.id} успешно удален"}
